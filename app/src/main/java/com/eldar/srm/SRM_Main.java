@@ -1,10 +1,14 @@
 package com.eldar.srm;
 
 import android.Manifest;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,8 +28,11 @@ import java.util.List;
 
 public class SRM_Main extends AppCompatActivity
 {
-    private final int INTERNET_REQUEST_RESULT = 1;
-    List<String> returnableResult;
+    private static final int INTERNET_REQUEST_RESULT = 1;
+    private static final int WAKE_LOCK_REQUEST_RESULT = 2;
+    private List<String> returnableResult;
+    private ProgressDialog downloadProgress;
+    private static final String DOWNLOAD_TASK = "DOWNLOAD TASK";
 
 
     //This section is for setting up menus, turning on UI
@@ -33,15 +40,24 @@ public class SRM_Main extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         returnableResult = null;
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_srm__main);
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.INTERNET)!= PackageManager.PERMISSION_GRANTED)
+
+        if (!checkPermissions())
         {
             getPermissions();
         }
 
         Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(onClickListener);
+
+        downloadProgress = new ProgressDialog(SRM_Main.this);
+        downloadProgress.setMessage("Downloading Dictionary");
+        downloadProgress.setIndeterminate(true);
+        downloadProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        downloadProgress.setCancelable(true);
     }
 
     @Override
@@ -55,9 +71,24 @@ public class SRM_Main extends AppCompatActivity
     //This section is for Dealing with app permissions
     //Currently only need internet access to dowload new dictionaries
 
+    private boolean checkPermissions()
+    {
+        boolean allPermissionsGranted = true;
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.INTERNET)!= PackageManager.PERMISSION_GRANTED)
+        {
+            allPermissionsGranted = false;
+        }
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.WAKE_LOCK)!= PackageManager.PERMISSION_GRANTED)
+        {
+            allPermissionsGranted = false;
+        }
+        return allPermissionsGranted;
+    }
     private void getPermissions()
     {
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.INTERNET},INTERNET_REQUEST_RESULT);
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WAKE_LOCK},WAKE_LOCK_REQUEST_RESULT);
+
     }
 
     @Override
@@ -68,6 +99,15 @@ public class SRM_Main extends AppCompatActivity
             case INTERNET_REQUEST_RESULT:
             {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){}
+                else
+                {
+                    this.finishAffinity();
+                }
+                return;
+            }
+            case WAKE_LOCK_REQUEST_RESULT:
+            {
+                if (grantResults.length > 0 && grantResults[1] == PackageManager.PERMISSION_GRANTED){}
                 else
                 {
                     this.finishAffinity();
@@ -88,9 +128,20 @@ public class SRM_Main extends AppCompatActivity
                     try {
                         url = new URL("https://sites.google.com/site/neocennuznyjsajt/fajly/sample_dict.txt");
                     } catch (MalformedURLException e) {
-                        Log.e("DOWNLOAD TASK",e.toString());
+                        Log.e(DOWNLOAD_TASK,e.toString());
                     }
-                    new DownloadFilesTask().execute(url);
+                    final DownloadFilesTask downloadFilesTask = new DownloadFilesTask();
+                    downloadFilesTask.execute(url);
+
+                    downloadProgress.setOnCancelListener(new DialogInterface.OnCancelListener()
+                    {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface)
+                        {
+                            downloadFilesTask.cancel(true);
+                        }
+                    });
+
                     break;
                 }
                 case R.id.button2:
@@ -108,6 +159,16 @@ public class SRM_Main extends AppCompatActivity
     //can't be kept in a separate class due to need to access UI elements (namely, a progres dialog)
     private class DownloadFilesTask extends AsyncTask<URL,Void,List<String>>
     {
+        PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        PowerManager.WakeLock mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mWakeLock.acquire();
+            downloadProgress.show();
+        }
+
         protected List<String> doInBackground(URL... urls)
         {
             BufferedReader in = null;
@@ -122,13 +183,14 @@ public class SRM_Main extends AppCompatActivity
                 {
                     debugIterCount++;
                     results.add(str);
-                    Log.d("DOWNLOAD TASK", str);
+                    Log.d(DOWNLOAD_TASK, str);
                 }
-                Log.d("DOWNLOAD TASK", "iterated for " + debugIterCount + " rounds");
+                Log.d(DOWNLOAD_TASK, "iterated for " + debugIterCount + " rounds");
             }
             catch (IOException e)
             {
-                Log.d("DOWNLOAD TASK", e.toString());
+                Log.d(DOWNLOAD_TASK, e.toString());
+                return null;
             }
             finally
             {
@@ -136,16 +198,23 @@ public class SRM_Main extends AppCompatActivity
                 {
                     in.close();
                 }
+                catch(NullPointerException e)
+                {
+                    Log.e(DOWNLOAD_TASK, e.toString());
+                }
                 catch(IOException e)
                 {
-                    Log.e("DOWNLOAD TASK", e.toString());
+                    Log.e(DOWNLOAD_TASK, e.toString());
                 }
             }
             return results;
         }
 
-        protected void onPostExecute(List<String> results) {
-            Log.d("DOWNLOAD TASK", "dictionary downloaded");
+        protected void onPostExecute(List<String> results)
+        {
+            mWakeLock.release();
+            downloadProgress.dismiss();
+            Log.d(DOWNLOAD_TASK, "dictionary downloaded");
             returnableResult = results;
         }
     }
