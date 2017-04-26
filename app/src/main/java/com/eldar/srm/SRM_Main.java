@@ -11,12 +11,16 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,6 +38,8 @@ public class SRM_Main extends AppCompatActivity
     private ProgressDialog downloadProgress;
     private static final String DOWNLOAD_TASK = "DOWNLOAD TASK";
 
+    private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/sample_dict.txt";
+
 
     //This section is for setting up menus, turning on UI
     @Override
@@ -42,6 +48,7 @@ public class SRM_Main extends AppCompatActivity
         returnableResult = null;
 
         super.onCreate(savedInstanceState);
+
 
         setContentView(R.layout.activity_srm__main);
 
@@ -118,30 +125,48 @@ public class SRM_Main extends AppCompatActivity
     }
 
     //this section is for the listeners for various buttons, and their behavior
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.clear:
+                // User chose the "Settings" item, show the app settings UI...
+                return true;
+
+            case R.id.merge:
+                final EditText urlText = new EditText(this);
+                urlText.setText(mergeDictURL);
+                new AlertDialog.Builder(this)
+                        .setTitle("Merge Dictionaries")
+                        .setMessage("Add more words to the dictionary from a link")
+                        .setView(urlText)
+                        .setPositiveButton("Merge Dictionary", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                String url = urlText.getText().toString();
+                                mergeDictionaries(url);
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                            }
+                        })
+                        .show();
+
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(final View v) {
             switch(v.getId()){
                 case R.id.button:
                 {
-                    URL url = null;
-                    try {
-                        url = new URL("https://sites.google.com/site/neocennuznyjsajt/fajly/sample_dict.txt");
-                    } catch (MalformedURLException e) {
-                        Log.e(DOWNLOAD_TASK,e.toString());
-                    }
-                    final DownloadFilesTask downloadFilesTask = new DownloadFilesTask();
-                    downloadFilesTask.execute(url);
-
-                    downloadProgress.setOnCancelListener(new DialogInterface.OnCancelListener()
-                    {
-                        @Override
-                        public void onCancel(DialogInterface dialogInterface)
-                        {
-                            downloadFilesTask.cancel(true);
-                        }
-                    });
-
                     break;
                 }
                 case R.id.button2:
@@ -154,6 +179,27 @@ public class SRM_Main extends AppCompatActivity
     };
 
     //this section is for any methods relating to button clicks that need their own class/methods
+
+    private void mergeDictionaries(String linkedURL)
+    {
+        URL url = null;
+        try {
+            url = new URL(linkedURL);
+        } catch (MalformedURLException e) {
+            Log.e(DOWNLOAD_TASK,e.toString());
+        }
+        final DownloadFilesTask downloadFilesTask = new DownloadFilesTask();
+        downloadFilesTask.execute(url);
+
+        downloadProgress.setOnCancelListener(new DialogInterface.OnCancelListener()
+        {
+            @Override
+            public void onCancel(DialogInterface dialogInterface)
+            {
+                downloadFilesTask.cancel(true);
+            }
+        });
+    }
 
     //activated when merge button is selected and a valid URL is provided.
     //can't be kept in a separate class due to need to access UI elements (namely, a progres dialog)

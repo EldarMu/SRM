@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:compat="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/clear"
-        android:title="Clear" />
+        android:title="@string/clear"
+        compat:showAsAction="always|withText"
+        android:icon="@drawable/ic_delete_forever"/>
     <item android:id="@+id/merge"
-        android:title="Merge" />
+        compat:showAsAction="always|withText"
+        android:icon="@drawable/ic_call_merge"
+        android:title="@string/merge" />
 </menu>
