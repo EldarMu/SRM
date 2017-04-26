@@ -1,18 +1,16 @@
 package com.eldar.srm;
 
-import java.util.Comparator;
-
 /**
  * Created by eldar on 4/26/2017.
  */
-public class MultiLingualDictionaryEntry
+public class DictEntry
 {
     int priority;
     String wordCategory;
     String comment;
     String[] translations;
 
-    public MultiLingualDictionaryEntry(String line, int numOfLangs, int pri)
+    public DictEntry(String line, int numOfLangs, int pri)
     {
         if (line == null || line.length() == 0) return;
         priority = pri;
@@ -33,8 +31,8 @@ public class MultiLingualDictionaryEntry
     public boolean equals(Object obj)
     {
         if (this == obj) {return true;}
-        if(!(obj instanceof MultiLingualDictionaryEntry)) {return false;}
-        MultiLingualDictionaryEntry theObject = (MultiLingualDictionaryEntry)obj;
+        if(!(obj instanceof DictEntry)) {return false;}
+        DictEntry theObject = (DictEntry)obj;
         return translations[0].equals(theObject.translations[0]);
     }
 

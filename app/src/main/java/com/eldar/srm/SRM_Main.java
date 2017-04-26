@@ -36,7 +36,7 @@ public class SRM_Main extends AppCompatActivity
     private ProgressDialog downloadProgress;
     private static final String DOWNLOAD_TASK = "DOWNLOAD TASK";
 
-    private ArrayList<ArrayList<MultiLingualDictionaryEntry>> theDictionary;
+    private ArrayList<ArrayList<DictEntry>> theDictionary;
     private int numOfLists;
     private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/sample_dict.txt";
 

@@ -3,8 +3,6 @@ package com.eldar.srm;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -12,10 +10,10 @@ import java.util.List;
  */
 public class DictionaryBuilder
 {
-    public ArrayList<ArrayList<MultiLingualDictionaryEntry>> getMerged(ArrayList<ArrayList<MultiLingualDictionaryEntry>> currentDict, List<String> wordsToAdd, int numbOfLists)
+    public ArrayList<ArrayList<DictEntry>> getMerged(ArrayList<ArrayList<DictEntry>> currentDict, List<String> wordsToAdd, int numbOfLists)
     {
         //create the dictionary we're going to use
-        ArrayList<ArrayList<MultiLingualDictionaryEntry>> theDictionary = null;
+        ArrayList<ArrayList<DictEntry>> theDictionary = null;
 
         switch (currentDict.size())
         {
@@ -35,17 +33,17 @@ public class DictionaryBuilder
                 currentDict.remove(0);
 
                 //create the List that will contain the template entry (lists the names of the languages)
-                ArrayList<MultiLingualDictionaryEntry> template = new ArrayList<MultiLingualDictionaryEntry>();
+                ArrayList<DictEntry> template = new ArrayList<DictEntry>();
                 //create the dictionary entry of the template
-                MultiLingualDictionaryEntry header = new MultiLingualDictionaryEntry(wordsToAdd.get(0), numOfLangs, 0);
+                DictEntry header = new DictEntry(wordsToAdd.get(0), numOfLangs, 0);
                 template.add(header);
                 theDictionary.add(template);
 
                 //since we had only a stub, we're putting all of the entries into the first real list
-                ArrayList<MultiLingualDictionaryEntry> initialList = new ArrayList<MultiLingualDictionaryEntry>();
+                ArrayList<DictEntry> initialList = new ArrayList<DictEntry>();
                 for (int i = 1; i < wordsToAdd.size(); i++)
                 {
-                    MultiLingualDictionaryEntry dictEntry = new MultiLingualDictionaryEntry(wordsToAdd.get(i), numOfLangs, 1);
+                    DictEntry dictEntry = new DictEntry(wordsToAdd.get(i), numOfLangs, 1);
                     initialList.add(dictEntry);
                 }
                 theDictionary.add(initialList);
@@ -53,7 +51,7 @@ public class DictionaryBuilder
                 //still create the other lists, even though they initially contain nothing
                 for (int j = 1; j < numbOfLists; j++)
                 {
-                    theDictionary.add(new ArrayList<MultiLingualDictionaryEntry>());
+                    theDictionary.add(new ArrayList<DictEntry>());
                 }
                 //at this point, we've added all the lists that we're going to need.
                 //the first list only holds the template
@@ -82,17 +80,17 @@ public class DictionaryBuilder
 
                 }
 
-                ArrayList<MultiLingualDictionaryEntry> tempArrList = new ArrayList<MultiLingualDictionaryEntry>();
+                ArrayList<DictEntry> tempArrList = new ArrayList<DictEntry>();
                 //turn these words into mldes
                 for (int i = 0; i < wordsToAdd.size(); i++)
                 {
                     //the default list to add things to is 1
-                    tempArrList.add(new MultiLingualDictionaryEntry(wordsToAdd.get(i), numOfLangs, 1));
+                    tempArrList.add(new DictEntry(wordsToAdd.get(i), numOfLangs, 1));
                 }
 
                 for (int i = 1; i < theDictionary.size(); i++)
                 {
-                    ArrayList<MultiLingualDictionaryEntry> secondTemp = new ArrayList<MultiLingualDictionaryEntry>();
+                    ArrayList<DictEntry> secondTemp = new ArrayList<DictEntry>();
 
                     for (int j = 1; j < tempArrList.size(); j++)
                     {
