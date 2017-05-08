@@ -53,6 +53,13 @@ public class StorageManager
         }
         return isSuccessful;
     }
+    public void deleteLocalCopy(Context context)
+    {
+        if (!context.deleteFile("storedIntlDict.txt"))
+        {
+            Log.d("TASK: DELETING ", "failed to locate the local copy for deletion");
+        }
+    }
 
     public boolean savedDictExists(Context context)
     {

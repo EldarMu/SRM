@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -14,7 +13,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Layout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,10 +23,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,21 +38,17 @@ public class SRM_Main extends AppCompatActivity {
     private ProgressDialog downloadProgress;
     private static final String DOWNLOAD_TASK = "DOWNLOAD TASK";
 
+    private SRMSession session;
     private ArrayList<ArrayList<DictEntry>> theDictionary;
     private int numOfLists;
     private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/sample_dict.txt";
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
 
 
     //This section is for setting up menus, turning on UI
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         numOfLists = 3;
-        theDictionary = new ArrayList<ArrayList<DictEntry>>();
+        initializeDictionary();
 
         super.onCreate(savedInstanceState);
 
@@ -93,17 +83,33 @@ public class SRM_Main extends AppCompatActivity {
         downloadProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         downloadProgress.setCancelable(true);
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.defaultmenu, menu);
         return true;
+    }
+
+    //Initializing the dictionary element and Session
+    private void initializeDictionary()
+    {
+        StorageManager sm = new StorageManager();
+        if (sm.savedDictExists(getApplicationContext()))
+        {
+            theDictionary = sm.loadIntlDictionary(getApplicationContext());
+            session = new SRMSession(theDictionary);
+        }
+        else
+        {
+            String templateEntry = "\tNo words found\tPlease merge in a dictionary";
+            DictEntry de = new DictEntry(templateEntry,2,0);
+            ArrayList<DictEntry> temp = new ArrayList<DictEntry>();
+            temp.add(de);
+            theDictionary = new ArrayList<ArrayList<DictEntry>>();
+            theDictionary.add(temp);
+            session = new SRMSession(theDictionary);
+        }
     }
 
     //This section is for Dealing with app permissions
@@ -152,7 +158,24 @@ public class SRM_Main extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.clear:
-                //Empties the Lists
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete local dictionary")
+                        .setMessage("Are you sure you want to delete the local dictionary?")
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                StorageManager sm = new StorageManager();
+                                if (sm.savedDictExists(getApplicationContext()))
+                                {
+                                    sm.deleteLocalCopy(getApplicationContext());
+                                }
+
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                            }
+                        })
+                        .show();
                 return true;
 
             case R.id.merge:
@@ -176,10 +199,7 @@ public class SRM_Main extends AppCompatActivity {
                         .show();
 
                 return true;
-
             default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
 
         }
@@ -209,7 +229,30 @@ public class SRM_Main extends AppCompatActivity {
         }
     };
 
+
     //this section is for any methods relating to button clicks that need their own class/methods
+    private void updateTest()
+    {
+        TextView translations = (TextView) findViewById(R.id.textViewTranslations);
+        TextView category = (TextView) findViewById(R.id.textViewCategory);
+        TextView comments = (TextView) findViewById(R.id.textViewComments);
+        TextView mainLanguage = (TextView) findViewById(R.id.textViewPrimaryLanguage);
+        DictEntry de = session.getNext();
+        category.setText(de.wordCategory);
+        mainLanguage.setText(de.translations[0]);
+
+        StringBuffer sb = new StringBuffer();
+        for (int i = 1; i < de.translations.length; i++)
+        {
+            sb.append(de.translations[i] + "\n");
+        }
+        translations.setText(sb.toString());
+        if (de.comment != null)
+        {
+            comments.setText(de.comment);
+        }
+    }
+
     private void switchScreen(boolean isInTestState)
     {
         TextView translations = (TextView) findViewById(R.id.textViewTranslations);
@@ -274,46 +317,6 @@ public class SRM_Main extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "SRM_Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.eldar.srm/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "SRM_Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.eldar.srm/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
-    }
-
     //activated when merge button is selected and a valid URL is provided.
     //can't be kept in a separate class due to need to access UI elements (namely, a progres dialog)
     private class DownloadFilesTask extends AsyncTask<URL, Void, List<String>> {
@@ -362,6 +365,14 @@ public class SRM_Main extends AppCompatActivity {
             Log.d(DOWNLOAD_TASK, "intlDictionary downloaded");
             DictionaryBuilder dictBuild = new DictionaryBuilder();
             theDictionary = dictBuild.getMerged(theDictionary, results, numOfLists);
+            if (session != null)
+            {
+                session.endSession();
+                session = new SRMSession(theDictionary);
+            }
+            StorageManager sm = new StorageManager();
+            sm.save(theDictionary,getApplicationContext());
+            updateTest();
         }
     }
 

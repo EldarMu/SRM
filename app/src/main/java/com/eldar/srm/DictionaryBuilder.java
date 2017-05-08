@@ -56,7 +56,7 @@ public class DictionaryBuilder
                 }
                 //at this point, we've added all the lists that we're going to need.
                 //the first list only holds the template
-                //the rest of the lists separate the intlDictionary entries based on how frequently they ought to be brought up to the user
+                //the rest of the lists separate the intlDictionary entries based on how frequently they ought to be brought up to the use
 
             }
             // if it's above 1, we're treating it as a legitimate list of lists that has some information already stored in it

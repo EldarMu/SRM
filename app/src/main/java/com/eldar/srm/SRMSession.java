@@ -14,12 +14,13 @@ public class SRMSession
 {
     ArrayList<DictEntry> session;
     ArrayList<ArrayList<DictEntry>> intlDictionary;
-    DictEntry currentEntry;
+    private DictEntry currentEntry;
     int numOfLists;
+
     public SRMSession(ArrayList<ArrayList<DictEntry>> theDict)
     {
         session=null;
-        currentEntry=null;
+        currentEntry = null;
         intlDictionary = theDict;
         numOfLists = theDict.size()-1;
     }
@@ -30,15 +31,33 @@ public class SRMSession
         {
             createSession();
         }
-        DictEntry next = session.get(0);
+        currentEntry = session.get(0);
         session.remove(0);
-        return next;
+        return currentEntry;
     }
 
-    public void update(DictEntry tested, int score)
+    public void update(int score)
     {
-        tested.priority = score;
-        intlDictionary.get(score).add(tested);
+        currentEntry.priority = score;
+        intlDictionary.get(score).add(currentEntry);
+    }
+
+    public ArrayList<ArrayList<DictEntry>> endSession()
+    {
+        if (currentEntry != null)
+        {
+            intlDictionary.get(currentEntry.priority).add(currentEntry);
+        }
+        if (session != null)
+        {
+            for (int i = 0; i < session.size(); i++)
+            {
+                intlDictionary.get(session.get(i).priority).add(session.get(i));
+            }
+        }
+        session = null;
+        currentEntry = null;
+        return intlDictionary;
     }
 
     private void createSession()
