@@ -8,5 +8,5 @@
     <item android:id="@+id/merge"
         compat:showAsAction="always|withText"
         android:icon="@drawable/ic_call_merge"
-        android:title="@string/merge" />
+        android:title="@string/Merge" />
 </menu>

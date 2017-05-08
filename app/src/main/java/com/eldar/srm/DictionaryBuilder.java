@@ -3,6 +3,7 @@ package com.eldar.srm;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -12,29 +13,29 @@ public class DictionaryBuilder
 {
     public ArrayList<ArrayList<DictEntry>> getMerged(ArrayList<ArrayList<DictEntry>> currentDict, List<String> wordsToAdd, int numbOfLists)
     {
-        //create the dictionary we're going to use
+        //create the intlDictionary we're going to use
         ArrayList<ArrayList<DictEntry>> theDictionary = null;
 
-        switch (currentDict.size())
+         switch (currentDict.size())
         {
             case 0:
             {
                 //this shouldn't happen
-                Log.e("TASK: MERGING", "a dictionary that had no entries at all was passed in. How?");
+                Log.e("TASK: MERGING", "a Dictionary that had no entries at all was passed in. How?");
                 break;
             }
 
             case 1:
             {
-                //figure out number of languages used in dictionary
-                int numOfLangs = wordsToAdd.get(0).split("/t").length-1;
+                //figure out number of languages used in intlDictionary
+                int numOfLangs = wordsToAdd.get(0).split("\t").length-1;
 
                 //since the only way size will be one is if it only contained the stub, we remove the stub
                 currentDict.remove(0);
 
                 //create the List that will contain the template entry (lists the names of the languages)
                 ArrayList<DictEntry> template = new ArrayList<DictEntry>();
-                //create the dictionary entry of the template
+                //create the intlDictionary entry of the template
                 DictEntry header = new DictEntry(wordsToAdd.get(0), numOfLangs, 0);
                 template.add(header);
                 theDictionary.add(template);
@@ -55,7 +56,7 @@ public class DictionaryBuilder
                 }
                 //at this point, we've added all the lists that we're going to need.
                 //the first list only holds the template
-                //the rest of the lists separate the dictionary entries based on how frequently they ought to be brought up to the user
+                //the rest of the lists separate the intlDictionary entries based on how frequently they ought to be brought up to the user
 
             }
             // if it's above 1, we're treating it as a legitimate list of lists that has some information already stored in it
@@ -65,13 +66,13 @@ public class DictionaryBuilder
             default:
             {
                 theDictionary = currentDict;
-                //figure out number of languages used in dictionary
-                int numOfLangs = wordsToAdd.get(0).split("/t").length-1;
+                //figure out number of languages used in intlDictionary
+                int numOfLangs = wordsToAdd.get(0).split("\t").length-1;
                 //check if merged list has more words
                 if (numOfLangs != theDictionary.get(0).get(0).translations.length)
                 {
                     //!Current Behavior - language number mismatch will lead to unstable behavior!
-                    //!Old dictionary removed, only new remains!
+                    //!Old intlDictionary removed, only new remains!
 
                     for (int i = 0; i < theDictionary.size(); i++)
                     {

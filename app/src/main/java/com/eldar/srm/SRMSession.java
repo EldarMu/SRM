@@ -7,20 +7,20 @@ import java.util.Random;
 /**
  * Created by eldar on 4/26/2017.
  */
-//this class creates bundles of dictionary entries with appropriate frequencies from each list
+//this class creates bundles of intlDictionary entries with appropriate frequencies from each list
 //and manages the movement of entries between lists during testing
 
 public class SRMSession
 {
     ArrayList<DictEntry> session;
-    ArrayList<ArrayList<DictEntry>> dictionary;
+    ArrayList<ArrayList<DictEntry>> intlDictionary;
     DictEntry currentEntry;
     int numOfLists;
     public SRMSession(ArrayList<ArrayList<DictEntry>> theDict)
     {
         session=null;
         currentEntry=null;
-        dictionary = theDict;
+        intlDictionary = theDict;
         numOfLists = theDict.size()-1;
     }
 
@@ -38,22 +38,23 @@ public class SRMSession
     public void update(DictEntry tested, int score)
     {
         tested.priority = score;
-        dictionary.get(score).add(tested);
+        intlDictionary.get(score).add(tested);
     }
 
     private void createSession()
     {
         session = new ArrayList<DictEntry>();
-        Random randGen = new Random();
-        int multiplier = dictionary.size()-1;
-        for (int i = 1; i < dictionary.size(); i++)
+        long timeInNano = System.nanoTime();
+        Random randGen = new Random(timeInNano);
+        int multiplier = intlDictionary.size()-1;
+        for (int i = 1; i < intlDictionary.size(); i++)
         {
             for (int j = 0; j < multiplier; j++)
             {
-                int rand = randGen.nextInt(dictionary.get(i).size());
-                session.add(dictionary.get(i).get(rand));
-                //we remove the entries from the dictionary, as their priority values may change
-                dictionary.get(i).remove(rand);
+                int rand = randGen.nextInt(intlDictionary.get(i).size());
+                session.add(intlDictionary.get(i).get(rand));
+                //we remove the entries from the intlDictionary, as their priority values may change
+                intlDictionary.get(i).remove(rand);
             }
             //so we pull five entries from the first, four from the second...one from the fifth
             multiplier--;

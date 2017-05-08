@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">SRM</string>
     <string name="clear">Clear</string>
-    <string name="merge">Merge</string>
+    <string name="Merge">Merge</string>
+    <string name="Keep">Keep</string>
+    <string name="Good">Good</string>
+    <string name="Fail">Fail</string>
 </resources>
