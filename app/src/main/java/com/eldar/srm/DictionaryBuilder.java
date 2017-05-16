@@ -50,7 +50,7 @@ public class DictionaryBuilder
                 {
                     if (wordsToAdd.get(i).length()!=0)
                     {
-                        Log.d("Merge task", "attempting to make word number " + Integer.toString(i));
+                        //Log.d("Merge task", "attempting to make word number " + Integer.toString(i));
                         DictEntry dictEntry = new DictEntry(wordsToAdd.get(i), numOfLangs, 1);
                         initialList.add(dictEntry);
                     }

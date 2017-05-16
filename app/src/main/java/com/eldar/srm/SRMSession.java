@@ -42,6 +42,11 @@ public class SRMSession
 
     public void update(int score)
     {
+        if (intlDictionary.size()<2)
+        {
+            intlDictionary.get(0).add(currentEntry);
+            return;
+        }
         currentEntry.priority = score;
         intlDictionary.get(score).add(currentEntry);
     }

@@ -103,7 +103,7 @@ public class SRM_Main extends AppCompatActivity {
         }
         else
         {
-            String templateEntry = " \tNo words found\tPlease merge in a dictionary";
+            String templateEntry = " \tNo words found\tPlease merge in a dictionary\t";
             DictEntry de = new DictEntry(templateEntry,2,0);
             ArrayList<DictEntry> temp = new ArrayList<DictEntry>();
             temp.add(de);
@@ -382,9 +382,9 @@ public class SRM_Main extends AppCompatActivity {
                     results.add(str);
                     //Log.d(DOWNLOAD_TASK, str);
                 }
-                Log.d(DOWNLOAD_TASK, "iterated for " + debugIterCount + " rounds");
+                //Log.d(DOWNLOAD_TASK, "iterated for " + debugIterCount + " rounds");
             } catch (IOException e) {
-                Log.d(DOWNLOAD_TASK, e.toString());
+                Log.e(DOWNLOAD_TASK, e.toString());
                 return null;
             } finally {
                 try {
@@ -401,7 +401,7 @@ public class SRM_Main extends AppCompatActivity {
         protected void onPostExecute(List<String> results) {
             mWakeLock.release();
             downloadProgress.dismiss();
-            Log.d(DOWNLOAD_TASK, "intlDictionary downloaded");
+            //Log.d(DOWNLOAD_TASK, "intlDictionary downloaded");
             DictionaryBuilder dictBuild = new DictionaryBuilder();
             theDictionary = dictBuild.getMerged(theDictionary, results, numOfLists);
             if (session != null)

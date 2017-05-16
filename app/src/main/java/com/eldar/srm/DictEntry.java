@@ -13,10 +13,15 @@ public class DictEntry
     public DictEntry(String line, int numOfLangs, int pri)
     {
         if (line == null || line.length() == 0) {return;}
+        if (pri == 0 && line.indexOf(0)==line.indexOf(3))
+        {
+            line = line.substring(2);
+        }
         priority = pri;
         String[] words = line.split("\t",-2);
         wordCategory = words[0];
         translations = new String[numOfLangs];
+
         for (int i = 1; i <= numOfLangs; i++)
         {
             translations[i-1] = words[i];

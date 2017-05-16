@@ -63,7 +63,7 @@ public class StorageManager
     {
         if (!context.deleteFile("storedIntlDict.txt"))
         {
-            Log.d("TASK: DELETING ", "failed to locate the local copy for deletion");
+            //Log.d("TASK: DELETING ", "failed to locate the local copy for deletion");
         }
     }
 
@@ -120,7 +120,7 @@ public class StorageManager
         String[] wordsToAdd = data.split("\n");
 
         //figure out number of languages used in intlDictionary
-        int numOfLangs = wordsToAdd[0].split("\t").length-2;
+        int numOfLangs = 3;
 
         /*int maxPri = 0;
         //Right now default number of lists is 4, this can be modified in the future as a passed variable, but right now it's 4

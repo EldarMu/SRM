@@ -60,7 +60,7 @@
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="English Word\nRussian Word\nDutch Word"
         android:id="@+id/textViewTranslations"
@@ -78,25 +78,17 @@
         android:layout_alignParentEnd="true"
         android:id="@+id/space" />
 
-    <Space
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_below="@+id/textViewTranslations"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:id="@+id/space2" />
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Comments"
         android:id="@+id/textViewComments"
-        android:layout_below="@+id/space2"
-        android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/space2"
         android:textColor="#f9a825"
-        android:textSize="25sp" />
+        android:textSize="25sp"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/buttonFail"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/textViewTranslations" />
 
     <TextView
         android:layout_width="wrap_content"
