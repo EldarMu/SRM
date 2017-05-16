@@ -70,6 +70,8 @@ public class SRMSession
         long timeInNano = System.nanoTime();
         Random randGen = new Random(timeInNano);
         int multiplier = intlDictionary.size()-1;
+
+
         for (int i = 1; i < intlDictionary.size(); i++)
         {
             for (int j = 0; j < multiplier && j < intlDictionary.get(i).size(); j++)

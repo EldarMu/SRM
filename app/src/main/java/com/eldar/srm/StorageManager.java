@@ -122,15 +122,15 @@ public class StorageManager
         //figure out number of languages used in intlDictionary
         int numOfLangs = wordsToAdd[0].split("\t").length-2;
 
-        int maxPri = 0;
-        //figure out num of lists
+        /*int maxPri = 0;
+        //Right now default number of lists is 4, this can be modified in the future as a passed variable, but right now it's 4
         for (int i = 0; i < wordsToAdd.length; i++)
         {
             if (Character.getNumericValue(wordsToAdd[i].charAt(0)) > maxPri)
             {
                 maxPri = Character.getNumericValue(wordsToAdd[i].charAt(0));
             }
-        }
+        }*/
 
         //create the List that will contain the template entry (lists the names of the languages)
         ArrayList<DictEntry> template = new ArrayList<DictEntry>();
@@ -139,7 +139,7 @@ public class StorageManager
         template.add(header);
         theDictionary.add(template);
 
-        for (int i = 0; i < maxPri; i++)
+        for (int i = 0; i < 3; i++)
         {
             ArrayList<DictEntry> certainPriList = new ArrayList<DictEntry>();
             theDictionary.add(certainPriList);

@@ -28,7 +28,11 @@ public class DictionaryBuilder
             case 1:
             {
                 //figure out number of languages used in intlDictionary
-                int numOfLangs = wordsToAdd.get(0).split("\t").length-1;
+                /*int numOfLangs = wordsToAdd.get(0).split("\t").length-2;
+                was setting it up algorithmically, but inconsistency in source material keeps that from being viable
+                */
+                int numOfLangs = 3;
+
 
                 //since the only way size will be one is if it only contained the stub, we remove the stub
                 currentDict.remove(0);
@@ -46,6 +50,7 @@ public class DictionaryBuilder
                 {
                     if (wordsToAdd.get(i).length()!=0)
                     {
+                        Log.d("Merge task", "attempting to make word number " + Integer.toString(i));
                         DictEntry dictEntry = new DictEntry(wordsToAdd.get(i), numOfLangs, 1);
                         initialList.add(dictEntry);
                     }
@@ -70,7 +75,7 @@ public class DictionaryBuilder
             {
                 theDictionary = currentDict;
                 //figure out number of languages used in intlDictionary
-                int numOfLangs = wordsToAdd.get(0).split("\t").length-1;
+                int numOfLangs = 3;
                 //check if merged list has more words
                 int currentNumOfLangs = theDictionary.get(0).get(0).translations.length;
                 if (numOfLangs != theDictionary.get(0).get(0).translations.length)

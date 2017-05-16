@@ -14,7 +14,7 @@ public class DictEntry
     {
         if (line == null || line.length() == 0) {return;}
         priority = pri;
-        String[] words = line.split("\t");
+        String[] words = line.split("\t",-2);
         wordCategory = words[0];
         translations = new String[numOfLangs];
         for (int i = 1; i <= numOfLangs; i++)

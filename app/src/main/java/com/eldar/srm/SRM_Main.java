@@ -41,7 +41,7 @@ public class SRM_Main extends AppCompatActivity {
     private SRMSession session;
     private ArrayList<ArrayList<DictEntry>> theDictionary;
     private int numOfLists;
-    private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/sample_dict.txt";
+    private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/dict.tsv";
 
 
     //This section is for setting up menus, turning on UI
@@ -171,6 +171,7 @@ public class SRM_Main extends AppCompatActivity {
                                 {
                                     sm.deleteLocalCopy(getApplicationContext());
                                 }
+                                initializeDictionary();
 
                             }
                         })
@@ -214,16 +215,22 @@ public class SRM_Main extends AppCompatActivity {
             switch (v.getId()) {
                 case R.id.buttonFail:
                 {
+                    session.update(3);
+                    updateTest(session.getNext());
                     switchScreen(true);
                     break;
                 }
                 case R.id.buttonKeep:
                 {
+                    session.update(2);
+                    updateTest(session.getNext());
                     switchScreen(true);
                     break;
                 }
                 case R.id.buttonGood:
                 {
+                    session.update(1);
+                    updateTest(session.getNext());
                     switchScreen(true);
                     break;
                 }
@@ -231,6 +238,29 @@ public class SRM_Main extends AppCompatActivity {
 
         }
     };
+
+    @Override
+    public void onPause()
+    {
+        StorageManager sm = new StorageManager();
+        sm.save(session.endSession(), this);
+        super.onPause();
+    }
+
+    @Override
+    public void onStop()
+    {
+        StorageManager sm = new StorageManager();
+        sm.save(session.endSession(), this);
+        super.onStop();
+    }
+
+    @Override
+    public void onResume()
+    {
+        initializeDictionary();
+        super.onResume();
+    }
 
 
     //this section is for any methods relating to button clicks that need their own class/methods
@@ -327,7 +357,7 @@ public class SRM_Main extends AppCompatActivity {
     }
 
     //activated when merge button is selected and a valid URL is provided.
-    //can't be kept in a separate class due to need to access UI elements (namely, a progres dialog)
+    //can't be kept in a separate class due to need to access UI elements (namely, a progress dialog)
     private class DownloadFilesTask extends AsyncTask<URL, Void, List<String>> {
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
@@ -350,7 +380,7 @@ public class SRM_Main extends AppCompatActivity {
                 while ((str = in.readLine()) != null) {
                     debugIterCount++;
                     results.add(str);
-                    Log.d(DOWNLOAD_TASK, str);
+                    //Log.d(DOWNLOAD_TASK, str);
                 }
                 Log.d(DOWNLOAD_TASK, "iterated for " + debugIterCount + " rounds");
             } catch (IOException e) {
