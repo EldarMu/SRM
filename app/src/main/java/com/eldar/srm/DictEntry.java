@@ -12,7 +12,7 @@ public class DictEntry
 
     public DictEntry(String line, int numOfLangs, int pri)
     {
-        if (line == null || line.length() == 0) return;
+        if (line == null || line.length() == 0) {return;}
         priority = pri;
         String[] words = line.split("\t");
         wordCategory = words[0];

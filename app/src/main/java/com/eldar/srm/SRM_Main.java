@@ -48,8 +48,6 @@ public class SRM_Main extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         numOfLists = 3;
-        initializeDictionary();
-
         super.onCreate(savedInstanceState);
 
 
@@ -77,6 +75,8 @@ public class SRM_Main extends AppCompatActivity {
         button = (Button) findViewById(R.id.buttonKeep);
         button.setOnClickListener(onClickListener);
 
+        initializeDictionary();
+
         downloadProgress = new ProgressDialog(SRM_Main.this);
         downloadProgress.setMessage("Downloading Dictionary");
         downloadProgress.setIndeterminate(true);
@@ -99,17 +99,20 @@ public class SRM_Main extends AppCompatActivity {
         {
             theDictionary = sm.loadIntlDictionary(getApplicationContext());
             session = new SRMSession(theDictionary);
+            updateTest(session.getNext());
         }
         else
         {
-            String templateEntry = "\tNo words found\tPlease merge in a dictionary";
+            String templateEntry = " \tNo words found\tPlease merge in a dictionary";
             DictEntry de = new DictEntry(templateEntry,2,0);
             ArrayList<DictEntry> temp = new ArrayList<DictEntry>();
             temp.add(de);
             theDictionary = new ArrayList<ArrayList<DictEntry>>();
             theDictionary.add(temp);
             session = new SRMSession(theDictionary);
+            updateTest(de);
         }
+
     }
 
     //This section is for Dealing with app permissions
@@ -231,13 +234,13 @@ public class SRM_Main extends AppCompatActivity {
 
 
     //this section is for any methods relating to button clicks that need their own class/methods
-    private void updateTest()
+    private void updateTest(DictEntry de)
     {
         TextView translations = (TextView) findViewById(R.id.textViewTranslations);
         TextView category = (TextView) findViewById(R.id.textViewCategory);
         TextView comments = (TextView) findViewById(R.id.textViewComments);
         TextView mainLanguage = (TextView) findViewById(R.id.textViewPrimaryLanguage);
-        DictEntry de = session.getNext();
+
         category.setText(de.wordCategory);
         mainLanguage.setText(de.translations[0]);
 
@@ -269,8 +272,11 @@ public class SRM_Main extends AppCompatActivity {
             category.setVisibility(View.INVISIBLE);
             comments.setVisibility(View.INVISIBLE);
             goodButton.setEnabled(false);
+            goodButton.setVisibility(View.INVISIBLE);
             keepButton.setEnabled(false);
+            keepButton.setVisibility(View.INVISIBLE);
             failButton.setEnabled(false);
+            failButton.setVisibility(View.INVISIBLE);
             mrl.setClickable(true);
         }
         else
@@ -279,8 +285,11 @@ public class SRM_Main extends AppCompatActivity {
             category.setVisibility(View.VISIBLE);
             comments.setVisibility(View.VISIBLE);
             goodButton.setEnabled(true);
+            goodButton.setVisibility(View.VISIBLE);
             keepButton.setEnabled(true);
+            keepButton.setVisibility(View.VISIBLE);
             failButton.setEnabled(true);
+            failButton.setVisibility(View.VISIBLE);
             mrl.setClickable(false);
         }
     }
@@ -372,7 +381,7 @@ public class SRM_Main extends AppCompatActivity {
             }
             StorageManager sm = new StorageManager();
             sm.save(theDictionary,getApplicationContext());
-            updateTest();
+            updateTest(session.getNext());
         }
     }
 

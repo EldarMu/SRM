@@ -27,6 +27,10 @@ public class SRMSession
 
     public DictEntry getNext()
     {
+        if (intlDictionary.size() == 1)
+        {
+            return intlDictionary.get(0).get(0);
+        }
         if (session == null || session.size() == 0)
         {
             createSession();

@@ -14,7 +14,7 @@ public class DictionaryBuilder
     public ArrayList<ArrayList<DictEntry>> getMerged(ArrayList<ArrayList<DictEntry>> currentDict, List<String> wordsToAdd, int numbOfLists)
     {
         //create the intlDictionary we're going to use
-        ArrayList<ArrayList<DictEntry>> theDictionary = null;
+        ArrayList<ArrayList<DictEntry>> theDictionary = new ArrayList<ArrayList<DictEntry>>();
 
          switch (currentDict.size())
         {
@@ -44,8 +44,11 @@ public class DictionaryBuilder
                 ArrayList<DictEntry> initialList = new ArrayList<DictEntry>();
                 for (int i = 1; i < wordsToAdd.size(); i++)
                 {
-                    DictEntry dictEntry = new DictEntry(wordsToAdd.get(i), numOfLangs, 1);
-                    initialList.add(dictEntry);
+                    if (wordsToAdd.get(i).length()!=0)
+                    {
+                        DictEntry dictEntry = new DictEntry(wordsToAdd.get(i), numOfLangs, 1);
+                        initialList.add(dictEntry);
+                    }
                 }
                 theDictionary.add(initialList);
 
@@ -57,7 +60,7 @@ public class DictionaryBuilder
                 //at this point, we've added all the lists that we're going to need.
                 //the first list only holds the template
                 //the rest of the lists separate the intlDictionary entries based on how frequently they ought to be brought up to the use
-
+            return theDictionary;
             }
             // if it's above 1, we're treating it as a legitimate list of lists that has some information already stored in it
             // we merge the new data with the existing
@@ -69,6 +72,7 @@ public class DictionaryBuilder
                 //figure out number of languages used in intlDictionary
                 int numOfLangs = wordsToAdd.get(0).split("\t").length-1;
                 //check if merged list has more words
+                int currentNumOfLangs = theDictionary.get(0).get(0).translations.length;
                 if (numOfLangs != theDictionary.get(0).get(0).translations.length)
                 {
                     //!Current Behavior - language number mismatch will lead to unstable behavior!
@@ -86,7 +90,9 @@ public class DictionaryBuilder
                 for (int i = 0; i < wordsToAdd.size(); i++)
                 {
                     //the default list to add things to is 1
-                    tempArrList.add(new DictEntry(wordsToAdd.get(i), numOfLangs, 1));
+                    if (wordsToAdd.get(i).length()!=0) {
+                        tempArrList.add(new DictEntry(wordsToAdd.get(i), numOfLangs, 1));
+                    }
                 }
 
                 for (int i = 1; i < theDictionary.size(); i++)
