@@ -72,7 +72,7 @@ public class SRMSession
         int multiplier = intlDictionary.size()-1;
         for (int i = 1; i < intlDictionary.size(); i++)
         {
-            for (int j = 0; j < multiplier; j++)
+            for (int j = 0; j < multiplier && j < intlDictionary.get(i).size(); j++)
             {
                 int rand = randGen.nextInt(intlDictionary.get(i).size());
                 session.add(intlDictionary.get(i).get(rand));

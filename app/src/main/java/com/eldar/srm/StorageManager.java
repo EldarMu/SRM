@@ -3,12 +3,18 @@ package com.eldar.srm;
 import android.content.Context;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 
 /**
@@ -25,11 +31,11 @@ public class StorageManager
         String textFile = reformatDictAsString(intlDictionary);
 
         File file = new File(context.getFilesDir(), "storedIntlDict.txt");
-        FileOutputStream fileOutputStream = null;
+        Writer wrt = null;
         try
         {
-            fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.write(textFile.getBytes());
+            wrt = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf8"),8192);
+            wrt.write(textFile);
             isSuccessful = true;
         }
         catch (FileNotFoundException e)
@@ -44,7 +50,7 @@ public class StorageManager
         {
             try
             {
-                fileOutputStream.close();
+                wrt.close();
             }
             catch (IOException e)
             {
@@ -70,52 +76,51 @@ public class StorageManager
     public ArrayList<ArrayList<DictEntry>> loadIntlDictionary(Context context)
     {
         String loadTag = "TASK: LOADING ";
-        int ch;
-        StringBuffer fileContent = new StringBuffer();
-        FileInputStream fis = null;
+
+        StringBuilder sb = new StringBuilder("");
+        String path = context.getFilesDir() + "/storedIntlDict.txt";
+        BufferedReader rdr = null;
+        String line = "";
         try
         {
-            fis = context.openFileInput("storedIntlDict.txt");
-            try {
-                while( (ch = fis.read()) != -1)
-                {
-                    fileContent.append((char) ch);
-                }
-            }
-            catch (IOException e)
+            rdr = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf8"), 8192);
+            while ((line = rdr.readLine())!= null)
             {
-                Log.e(loadTag, "failed to parse file to text" + e.toString());
+                sb.append(line+"\n");
             }
         }
-        catch (FileNotFoundException e)
+        catch(UnsupportedCharsetException e)
         {
-            Log.e(loadTag, "Failed to open file " + e.toString());
+            Log.e(loadTag, "charset string is incorrect or not recognized" + e.toString());
+        }
+        catch(IOException e)
+        {
+            Log.e(loadTag, e.toString());
         }
         finally
         {
             try
             {
-                fis.close();
+                rdr.close();
             }
             catch(IOException e)
             {
                 Log.e(loadTag, "tried to close a null file input reader " + e.toString());
             }
         }
-        String data = new String(fileContent);
-        return formatStringAsDict(data);
+        return formatStringAsDict(sb.toString());
     }
 
     private ArrayList<ArrayList<DictEntry>> formatStringAsDict(String data)
     {
         //create the intlDictionary we're going to use
-        ArrayList<ArrayList<DictEntry>> theDictionary = null;
+        ArrayList<ArrayList<DictEntry>> theDictionary = new ArrayList<ArrayList<DictEntry>>();
 
 
         String[] wordsToAdd = data.split("\n");
 
         //figure out number of languages used in intlDictionary
-        int numOfLangs = wordsToAdd[0].split("\t").length-1;
+        int numOfLangs = wordsToAdd[0].split("\t").length-2;
 
         int maxPri = 0;
         //figure out num of lists
