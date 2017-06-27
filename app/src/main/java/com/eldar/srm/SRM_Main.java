@@ -41,6 +41,7 @@ public class SRM_Main extends AppCompatActivity {
     // private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/number.txt";
 
 
+    
     //This section is for setting up menus, turning on UI
     @Override
     protected void onCreate(Bundle savedInstanceState) {
