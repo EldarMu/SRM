@@ -5,93 +5,45 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
 
 /**
  * Created by eldar on 5/8/2017.
- * This class is responsible specifically for writing a single International Dictionary to
+ * This class is responsible specifically for writing a single dictionary to
  * internal storage, and loading it from there should it already exist
  */
-public class StorageManager
+class StorageManager
 {
-    public boolean save (ArrayList<ArrayList<DictEntry>> intlDictionary, Context context)
-    {
-        String saveTag = "TASK: SAVING ";
-        boolean isSuccessful = false;
-        String textFile = reformatDictAsString(intlDictionary);
+    private final static String loadTag = "TASK: LOADING ";
+    private final static String saveTag = "TASK: SAVING ";
+    private final static String deleteTag = "TASK: DELETING "    ;
+    private final static String baseFileName = "storedIntlDict.txt";
 
-        File file = new File(context.getFilesDir(), "storedIntlDict.txt");
-        Writer wrt = null;
-        try
-        {
-            wrt = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "utf8"),8192);
-            wrt.write(textFile);
-            isSuccessful = true;
-        }
-        catch (FileNotFoundException e)
-        {
-            Log.e(saveTag, "system refused to make a new file for us to use " + e.toString());
-        }
-        catch (IOException e)
-        {
-            Log.e(saveTag, "system refused to save " + e.toString());
-        }
-        finally
-        {
-            try
-            {
-                wrt.close();
-            }
-            catch (IOException e)
-            {
-                Log.e(saveTag, "tried to close a null outputstream");
-            }
-        }
-        return isSuccessful;
-    }
-    public void deleteLocalCopy(Context context)
+    private static String fileName(Context context)
     {
-        if (!context.deleteFile("storedIntlDict.txt"))
-        {
-            //Log.d("TASK: DELETING ", "failed to locate the local copy for deletion");
-        }
+        return context.getFilesDir() + "/" + baseFileName;
     }
 
-    public boolean savedDictExists(Context context)
-    {
-        File file = context.getFileStreamPath("storedIntlDict.txt");
-        return file.exists();
-    }
 
-    public ArrayList<ArrayList<DictEntry>> loadIntlDictionary(Context context)
+    static Dictionary load(Context context)
     {
-        String loadTag = "TASK: LOADING ";
-
-        StringBuilder sb = new StringBuilder("");
-        String path = context.getFilesDir() + "/storedIntlDict.txt";
+        Log.e(loadTag, "Loading " + fileName(context));
         BufferedReader rdr = null;
-        String line = "";
+        Dictionary dict = new Dictionary();
         try
         {
-            rdr = new BufferedReader(new InputStreamReader(new FileInputStream(path), "utf8"), 8192);
-            while ((line = rdr.readLine())!= null)
-            {
-                sb.append(line+"\n");
-            }
+            rdr = new BufferedReader(new InputStreamReader(new FileInputStream(fileName(context)), "utf8"), 8192);
+            dict.read(rdr);
         }
         catch(UnsupportedCharsetException e)
         {
-            Log.e(loadTag, "charset string is incorrect or not recognized" + e.toString());
+            Log.e(loadTag, "Charset string is incorrect or not recognized: " + e.toString());
         }
         catch(IOException e)
         {
@@ -101,86 +53,61 @@ public class StorageManager
         {
             try
             {
-                rdr.close();
+                if (rdr != null) {
+                    rdr.close();
+                }
             }
             catch(IOException e)
             {
-                Log.e(loadTag, "tried to close a null file input reader " + e.toString());
+                Log.e(loadTag, "Tried to close a null file input reader: " + e.toString());
             }
         }
-        return formatStringAsDict(sb.toString());
+        return dict;
     }
 
-    private ArrayList<ArrayList<DictEntry>> formatStringAsDict(String data)
+    static boolean save(Dictionary dict, Context context)
     {
-        //create the intlDictionary we're going to use
-        ArrayList<ArrayList<DictEntry>> theDictionary = new ArrayList<ArrayList<DictEntry>>();
+        Log.e(saveTag, "Saving " + fileName(context));
+        boolean isSuccessful = false;
 
-
-        String[] wordsToAdd = data.split("\n");
-
-        //figure out number of languages used in intlDictionary
-        int numOfLangs = 3;
-
-        /*int maxPri = 0;
-        //Right now default number of lists is 4, this can be modified in the future as a passed variable, but right now it's 4
-        for (int i = 0; i < wordsToAdd.length; i++)
+        BufferedWriter wrt = null;
+        try
         {
-            if (Character.getNumericValue(wordsToAdd[i].charAt(0)) > maxPri)
+            wrt = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName(context)), "utf8"),8192);
+            dict.write(wrt);
+            isSuccessful = true;
+        }
+        catch (FileNotFoundException e)
+        {
+            Log.e(saveTag, "System refused to make a new file for us to use: " + e.toString());
+        }
+        catch (IOException e)
+        {
+            Log.e(saveTag, "System refused to save: " + e.toString());
+        }
+        finally
+        {
+            try
             {
-                maxPri = Character.getNumericValue(wordsToAdd[i].charAt(0));
+                if (wrt != null) {
+                    wrt.close();
+                }
             }
-        }*/
-
-        //create the List that will contain the template entry (lists the names of the languages)
-        ArrayList<DictEntry> template = new ArrayList<DictEntry>();
-        //create the intlDictionary entry of the template
-        DictEntry header = new DictEntry(wordsToAdd[0], numOfLangs, 0);
-        template.add(header);
-        theDictionary.add(template);
-
-        for (int i = 0; i < 3; i++)
-        {
-            ArrayList<DictEntry> certainPriList = new ArrayList<DictEntry>();
-            theDictionary.add(certainPriList);
+            catch (IOException e)
+            {
+                Log.e(saveTag, "Tried to close a null outputstream.");
+            }
         }
-        //now we have all of the lists, list 0 is just for template, lists 1-N for our diff priorities
-
-        for (int i = 1; i < wordsToAdd.length; i++)
-        {
-            DictEntry de = new DictEntry(wordsToAdd[i].substring(2), numOfLangs, Character.getNumericValue(wordsToAdd[i].charAt(0)));
-            theDictionary.get(de.priority).add(de);
-        }
-        return theDictionary;
+        Log.e(saveTag, "Save outcome: " + isSuccessful);
+        return isSuccessful;
     }
 
-
-    private String reformatDictAsString(ArrayList<ArrayList<DictEntry>> intlDictionary)
+    static void deleteLocalCopy(Context context)
     {
-        StringBuilder sb = new StringBuilder("");
-        for (int i = 0; i < intlDictionary.size(); i++)
+        Log.e(deleteTag, "Deleting " + fileName(context));
+        if (!context.deleteFile(baseFileName))
         {
-            for (int j = 0; j < intlDictionary.get(i).size(); j++)
-            {
-                // so the result looks like LISTINDEX\tCATEGORY\tFIRSTLANGUAGE\tSECONDLANGUAGE\t...\tCOMMENT\n
-                sb.append(String.valueOf(i) + "\t");
-                sb.append(intlDictionary.get(i).get(j).wordCategory);
-                for (int k = 0; k < intlDictionary.get(i).get(j).translations.length; k++)
-                {
-                    sb.append("\t" + intlDictionary.get(i).get(j).translations[k]);
-                }
-                if (intlDictionary.get(i).get(j).comment!=null)
-                {
-                    sb.append( "\t" + intlDictionary.get(i).get(j).comment + "\n");
-                }
-                else
-                {
-                    sb.append("\n");
-                }
-            }
+            Log.e(deleteTag, "failed to locate the local copy for deletion");
         }
-        return sb.toString();
     }
-
-
 }

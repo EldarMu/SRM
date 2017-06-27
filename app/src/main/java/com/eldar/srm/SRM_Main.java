@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SRM_Main extends AppCompatActivity {
     private static final int INTERNET_REQUEST_RESULT = 1;
@@ -38,16 +36,14 @@ public class SRM_Main extends AppCompatActivity {
     private ProgressDialog downloadProgress;
     private static final String DOWNLOAD_TASK = "DOWNLOAD TASK";
 
-    private SRMSession session;
-    private ArrayList<ArrayList<DictEntry>> theDictionary;
-    private int numOfLists;
+    private Dictionary dict = new Dictionary();
     private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/dict.tsv";
+    // private String mergeDictURL = "https://sites.google.com/site/neocennuznyjsajt/fajly/number.txt";
 
 
     //This section is for setting up menus, turning on UI
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        numOfLists = 3;
         super.onCreate(savedInstanceState);
 
 
@@ -61,10 +57,9 @@ public class SRM_Main extends AppCompatActivity {
 
         mrl.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View view, MotionEvent arg1)
-            {
+            public boolean onTouch(View view, MotionEvent arg1) {
                 switchScreen(false);
-                return true;//always return true to consume event
+                return true;  // Always return true to consume event.
             }
         });
 
@@ -84,6 +79,7 @@ public class SRM_Main extends AppCompatActivity {
         downloadProgress.setCancelable(true);
 
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -92,27 +88,9 @@ public class SRM_Main extends AppCompatActivity {
     }
 
     //Initializing the dictionary element and Session
-    private void initializeDictionary()
-    {
-        StorageManager sm = new StorageManager();
-        if (sm.savedDictExists(getApplicationContext()))
-        {
-            theDictionary = sm.loadIntlDictionary(getApplicationContext());
-            session = new SRMSession(theDictionary);
-            updateTest(session.getNext());
-        }
-        else
-        {
-            String templateEntry = " \tNo words found\tPlease merge in a dictionary\t";
-            DictEntry de = new DictEntry(templateEntry,2,0);
-            ArrayList<DictEntry> temp = new ArrayList<DictEntry>();
-            temp.add(de);
-            theDictionary = new ArrayList<ArrayList<DictEntry>>();
-            theDictionary.add(temp);
-            session = new SRMSession(theDictionary);
-            updateTest(de);
-        }
-
+    private void initializeDictionary() {
+        dict = StorageManager.load(getApplicationContext());
+        updateTest(dict.next());
     }
 
     //This section is for Dealing with app permissions
@@ -167,10 +145,7 @@ public class SRM_Main extends AppCompatActivity {
                         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 StorageManager sm = new StorageManager();
-                                if (sm.savedDictExists(getApplicationContext()))
-                                {
-                                    sm.deleteLocalCopy(getApplicationContext());
-                                }
+                                sm.deleteLocalCopy(getApplicationContext());
                                 initializeDictionary();
 
                             }
@@ -214,80 +189,57 @@ public class SRM_Main extends AppCompatActivity {
         public void onClick(final View v) {
             switch (v.getId()) {
                 case R.id.buttonFail:
-                {
-                    session.update(3);
-                    updateTest(session.getNext());
-                    switchScreen(true);
+                    dict.front();
                     break;
-                }
                 case R.id.buttonKeep:
-                {
-                    session.update(2);
-                    updateTest(session.getNext());
-                    switchScreen(true);
+                    dict.keep();
                     break;
-                }
                 case R.id.buttonGood:
-                {
-                    session.update(1);
-                    updateTest(session.getNext());
-                    switchScreen(true);
+                    dict.back();
                     break;
-                }
+                // Exhaustive list, no default.
             }
-
+            switchScreen(true);
+            updateTest(dict.next());
         }
     };
 
     @Override
-    public void onPause()
-    {
-        StorageManager sm = new StorageManager();
-        sm.save(session.endSession(), this);
+    public void onPause() {
+        StorageManager.save(dict, this);
         super.onPause();
     }
 
     @Override
-    public void onStop()
-    {
-        StorageManager sm = new StorageManager();
-        sm.save(session.endSession(), this);
+    public void onStop() {
+        StorageManager.save(dict, this);
         super.onStop();
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         initializeDictionary();
         super.onResume();
     }
 
 
-    //this section is for any methods relating to button clicks that need their own class/methods
-    private void updateTest(DictEntry de)
-    {
+    // This section is for any methods relating to button clicks that need their own class/methods.
+
+    private void updateTest(Entry de) {
         TextView translations = (TextView) findViewById(R.id.textViewTranslations);
         TextView category = (TextView) findViewById(R.id.textViewCategory);
         TextView comments = (TextView) findViewById(R.id.textViewComments);
         TextView mainLanguage = (TextView) findViewById(R.id.textViewPrimaryLanguage);
 
-        category.setText(de.wordCategory);
-        mainLanguage.setText(de.translations[0]);
+        switchScreen(true);
+        category.setText(de.getCategory());
+        mainLanguage.setText(de.getWord());
 
-        StringBuffer sb = new StringBuffer();
-        for (int i = 1; i < de.translations.length; i++)
-        {
-            sb.append(de.translations[i] + "\n");
-        }
-        translations.setText(sb.toString());
-        if (de.comment != null)
-        {
-            comments.setText(de.comment);
-        }
+        translations.setText(de.getTranslation("\n"));
+        comments.setText(de.getComment());
     }
 
-    private void switchScreen(boolean isInTestState)
-    {
+    private void switchScreen(boolean isInTestState) {
         TextView translations = (TextView) findViewById(R.id.textViewTranslations);
         TextView category = (TextView) findViewById(R.id.textViewCategory);
         TextView comments = (TextView) findViewById(R.id.textViewComments);
@@ -296,8 +248,7 @@ public class SRM_Main extends AppCompatActivity {
         Button failButton = (Button) findViewById(R.id.buttonFail);
         RelativeLayout mrl = (RelativeLayout) findViewById(R.id.mainRelativeLayout);
 
-        if (isInTestState)
-        {
+        if (isInTestState) {
             translations.setVisibility(View.INVISIBLE);
             category.setVisibility(View.INVISIBLE);
             comments.setVisibility(View.INVISIBLE);
@@ -308,9 +259,7 @@ public class SRM_Main extends AppCompatActivity {
             failButton.setEnabled(false);
             failButton.setVisibility(View.INVISIBLE);
             mrl.setClickable(true);
-        }
-        else
-        {
+        } else {
             translations.setVisibility(View.VISIBLE);
             category.setVisibility(View.VISIBLE);
             comments.setVisibility(View.VISIBLE);
@@ -358,7 +307,7 @@ public class SRM_Main extends AppCompatActivity {
 
     //activated when merge button is selected and a valid URL is provided.
     //can't be kept in a separate class due to need to access UI elements (namely, a progress dialog)
-    private class DownloadFilesTask extends AsyncTask<URL, Void, List<String>> {
+    private class DownloadFilesTask extends AsyncTask<URL, Void, Dictionary> {
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
 
@@ -369,20 +318,14 @@ public class SRM_Main extends AppCompatActivity {
             downloadProgress.show();
         }
 
-        protected List<String> doInBackground(URL... urls) {
+        protected Dictionary doInBackground(URL... urls) {
             BufferedReader in = null;
             URL url = urls[0];
-            List<String> results = new ArrayList<String>();
+            Dictionary newDictionary = new Dictionary();
+            //List<String> results = new ArrayList<String>();
             try {
                 in = new BufferedReader(new InputStreamReader(url.openStream()));
-                String str;
-                int debugIterCount = 0;
-                while ((str = in.readLine()) != null) {
-                    debugIterCount++;
-                    results.add(str);
-                    //Log.d(DOWNLOAD_TASK, str);
-                }
-                //Log.d(DOWNLOAD_TASK, "iterated for " + debugIterCount + " rounds");
+                newDictionary = new Dictionary(in);
             } catch (IOException e) {
                 Log.e(DOWNLOAD_TASK, e.toString());
                 return null;
@@ -395,24 +338,17 @@ public class SRM_Main extends AppCompatActivity {
                     Log.e(DOWNLOAD_TASK, e.toString());
                 }
             }
-            return results;
+            return newDictionary;
         }
 
-        protected void onPostExecute(List<String> results) {
+        protected void onPostExecute(Dictionary results) {
             mWakeLock.release();
             downloadProgress.dismiss();
-            //Log.d(DOWNLOAD_TASK, "intlDictionary downloaded");
-            DictionaryBuilder dictBuild = new DictionaryBuilder();
-            theDictionary = dictBuild.getMerged(theDictionary, results, numOfLists);
-            if (session != null)
-            {
-                session.endSession();
-                session = new SRMSession(theDictionary);
-            }
+            Log.d(DOWNLOAD_TASK, "dictionary downloaded");
+            dict.merge(results);
             StorageManager sm = new StorageManager();
-            sm.save(theDictionary,getApplicationContext());
-            updateTest(session.getNext());
+            sm.save(dict, getApplicationContext());
+            updateTest(dict.next());
         }
     }
-
 }
